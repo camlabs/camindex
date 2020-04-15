@@ -378,7 +378,7 @@ func (etl *ETL) insertTx(block *rpc.Block) (err error) {
 				To:         vout.Address,
 				Asset:      vout.Asset,
 				Value:      vout.Value,
-				CreateTime: block.Time,
+				CreateTime: time.Unix(block.Time, 0),
 			})
 			if err != nil {
 				println(tx.ID + "===from:" + from + "===to:" + vout.Address + err.Error())
@@ -442,13 +442,13 @@ func (etl *ETL) spentUTXOs(block *rpc.Block) (err error) {
 
 	for _, tx := range block.Transactions {
 
-		// spentTime := time.Unix(block.Time, 0)
+		spentTime := time.Unix(block.Time, 0)
 
 		for _, vin := range tx.Vin {
 			utxos = append(utxos, &camdb.UTXO{
 				TX:         vin.TransactionID,
 				N:          vin.Vout,
-				SpentTime:  block.Time,
+				SpentTime:  &spentTime,
 				SpentBlock: block.Index,
 			})
 
@@ -559,7 +559,7 @@ func (etl *ETL) insertUTXOs(block *rpc.Block) error {
 				SpentBlock:  -1,
 				Asset:       vout.Asset,
 				Value:       vout.Value,
-				CreateTime:  block.Time,
+				CreateTime:  time.Unix(block.Time, 0),
 				SpentTime:   0,
 				Claimed:     false,
 			})
