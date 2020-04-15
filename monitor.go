@@ -23,7 +23,7 @@ type Monitor struct {
 
 // NewMonitor .
 func NewMonitor(conf *config.Config) (*Monitor, error) {
-	client := rpc.NewClient(conf.GetString("indexer.camrpc", "http://localhost:16332"))
+	client := rpc.NewClient(conf.GetString("order.camrpc", "http://localhost:16332"))
 
 	etl, err := newETL(conf)
 
