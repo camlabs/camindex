@@ -51,7 +51,7 @@ func NewMonitor(conf *config.Config) (*Monitor, error) {
 	
 
 	monitor := &Monitor{
-		Logger:       slf4go.Get("neo-monitor"),
+		Logger:       slf4go.Get("cam-monitor"),
 		client:       client,
 		etl:          etl,
 		pullDuration: time.Second * conf.GetDuration("indexer.pull", 10),
