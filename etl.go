@@ -23,8 +23,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 
-	// "github.com/inwecrypto/gomq"
-	// gomqkafka "github.com/inwecrypto/gomq-kafka"
+	// "github.com/camlabs/gomq"
+	// gomqkafka "github.com/camlabs/gomq-kafka"
 	"github.com/camlabs/camdb"
 	"github.com/camlabs/camgo/rpc"
 
@@ -93,7 +93,7 @@ func newETL(conf *config.Config) (*ETL, error) {
 	// }
 
 	return &ETL{
-		Logger: slf4go.Get("eth-indexer-etl"),
+		Logger: slf4go.Get("cam-indexer-etl"),
 		conf:   conf,
 		engine: engine,
 		// mq:     mq,
