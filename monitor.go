@@ -1,7 +1,6 @@
 package indexer
 
 import (
-	// "fmt"
 	"encoding/binary"
 	"time"
 
@@ -19,15 +18,13 @@ type Monitor struct {
 	client       *rpc.Client
 	etl          *ETL
 	pullDuration time.Duration
-	db           *leveldb.DB	
+	db           *leveldb.DB
 }
 
 // NewMonitor .
 func NewMonitor(conf *config.Config) (*Monitor, error) {
-	//创建rpc请求客户端
-	client := rpc.NewClient(conf.GetString("order.camrpc", "http://localhost:16332"))
+	client := rpc.NewClient(conf.GetString("indexer.camrpc", "http://localhost:16332"))
 
-	//数据库配置
 	etl, err := newETL(conf)
 
 	if err != nil {
@@ -40,66 +37,28 @@ func NewMonitor(conf *config.Config) (*Monitor, error) {
 		return nil, err
 	}
 
-	// startindexer := uint64(conf.GetInt64("indexer.start", 0))
-	
-	// if err != nil {		
-	// 	return nil,err
-	// }
-
-	
-
-	
+	startindexer := uint64(conf.GetInt64("indexer.start", 0))
 
 	monitor := &Monitor{
 		Logger:       slf4go.Get("cam-monitor"),
 		client:       client,
 		etl:          etl,
-		pullDuration: time.Second * conf.GetDuration("indexer.pull", 10),
-		db:           db,		
+		pullDuration: time.Second * conf.GetDuration("indexer.pull", 4),
+		db:           db,
 	}
 
-	//如果是0，则认为是初始化
-	// if startindexer == 0{
-	// 	monitor.setCursor(0)
-	// }
+	if monitor.getCursor() < startindexer {
+		if err := monitor.setCursor(startindexer); err != nil {
+			return nil, err
+		}
 
-	// if monitor.getCursor() < startindexer {
-	// 	if err := monitor.setCursor(startindexer); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
-
-	blockindex := conf.GetInt64("indexer.start",0)
-	//如果大于0，则进行配置，小于0则不进行配置
-	if blockindex >= 0 {
-		buff := make([]byte, 8)
-		binary.BigEndian.PutUint64(buff,uint64(blockindex))
-		db.Put(key, buff, nil)	
-	}	
+	}
 
 	return monitor, nil
 }
 
 // Run .
 func (monitor *Monitor) Run() {
-
-	
-
-	//测试数据库的插入
-	// err := monitor.etl.testInsert()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-
-	// return;
-	//leveldb初始化
-	// monitor.setCursor(0)
-
-	// currentCuror := monitor.getCursor();
-
-	// println(currentCuror)
-
-	//配置定时器
 	ticker := time.NewTicker(monitor.pullDuration)
 
 	for range ticker.C {
@@ -109,9 +68,6 @@ func (monitor *Monitor) Run() {
 		if err != nil {
 			monitor.ErrorF("fetch geth blocks err, %s", err)
 		}
-		// localBlockHeight :=	monitor.getCursor()
-		
-		// monitor.ErrorF("localBlockHeight:%d",localBlockHeight)
 
 		for monitor.getCursor() < uint64(blocks) {
 			if err := monitor.fetchBlock(); err != nil {
